@@ -1,0 +1,6 @@
+import {
+  "Rindoncreate/mooncallgrind" @cg,
+  "moonbitlang/core/json",
+}
+supported_targets = "js"
+options(link: { "js": { "exports": [ "run" ], "format": "esm" } })

@@ -1,0 +1,6 @@
+{
+  "private": true,
+  "type": "module",
+  "scripts": { "test:cli": "node tools/check_cli.mjs" },
+  "engines": { "node": ">=22" }
+}

@@ -1,0 +1,20 @@
+# Original synthetic fixture, MIT, 2026 Rindoncreate.
+version: 1
+creator: mooncallgrind fixture
+positions: instr line
+events: Ir Dr
+summary: 7 5
+ob=(1) app
+fl=(1) main.mbt
+fn=(1) main
+0x10 1 7 5
+cfn=(2) work
+calls=2 0x70 70
++1 +9 30 4
+cfn=(2)
+calls=1 0x71 71
++1 +10 40 5
+cfn=(1)
+calls=1 0x10 1
+* * 9 1
+totals: 7 5

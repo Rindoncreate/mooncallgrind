@@ -1,0 +1,106 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "Rindoncreate/mooncallgrind"
+
+import {
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn diff(Profile, Profile, String) -> Array[Change] raise ParseError
+
+pub fn normalize(String) -> String raise ParseError
+
+pub fn parse(String) -> Profile raise ParseError
+
+pub fn profile_version() -> String
+
+// Errors
+pub(all) suberror ParseError {
+  Syntax(Int32, String)
+  Unsupported(Int32, String)
+  Resource(Int32, String)
+} derive(@debug.Debug)
+pub fn ParseError::to_repr(Self) -> @debug.Repr
+
+// Types and methods
+pub(all) struct Change {
+  object : String
+  file : String
+  function_name : String
+  before : UInt64
+  after : UInt64
+} derive(Eq, @debug.Debug)
+pub fn Change::equal(Self, Self) -> Bool
+pub fn Change::not_equal(Self, Self) -> Bool
+pub fn Change::to_repr(Self) -> @debug.Repr
+
+pub(all) struct Context {
+  object : String
+  file : String
+  function_name : String
+  cost_file : String
+} derive(Eq, @debug.Debug)
+pub fn Context::equal(Self, Self) -> Bool
+pub fn Context::not_equal(Self, Self) -> Bool
+pub fn Context::to_repr(Self) -> @debug.Repr
+
+pub(all) struct Header {
+  key : String
+  value : String
+  line : Int32
+} derive(Eq, @debug.Debug)
+pub fn Header::equal(Self, Self) -> Bool
+pub fn Header::not_equal(Self, Self) -> Bool
+pub fn Header::to_repr(Self) -> @debug.Repr
+
+pub(all) struct Part {
+  headers : Array[Header]
+  events : Array[String]
+  positions : Array[String]
+} derive(Eq, @debug.Debug)
+pub fn Part::equal(Self, Self) -> Bool
+pub fn Part::not_equal(Self, Self) -> Bool
+pub fn Part::to_repr(Self) -> @debug.Repr
+
+pub(all) struct Profile {
+  parts : Array[Part]
+  records : Array[Record]
+} derive(Eq, @debug.Debug)
+pub fn Profile::equal(Self, Self) -> Bool
+pub fn Profile::not_equal(Self, Self) -> Bool
+pub fn Profile::self_totals(Self, String) -> Array[Total] raise ParseError
+pub fn Profile::to_repr(Self) -> @debug.Repr
+
+pub(all) struct Record {
+  part : Int32
+  line : Int32
+  context : Context
+  positions : Array[UInt64]
+  values : Array[UInt64]
+  kind : RecordKind
+} derive(Eq, @debug.Debug)
+pub fn Record::equal(Self, Self) -> Bool
+pub fn Record::not_equal(Self, Self) -> Bool
+pub fn Record::to_repr(Self) -> @debug.Repr
+
+pub(all) enum RecordKind {
+  SelfCost
+  Call(UInt64, Context, Array[UInt64])
+} derive(Eq, @debug.Debug)
+pub fn RecordKind::equal(Self, Self) -> Bool
+pub fn RecordKind::not_equal(Self, Self) -> Bool
+pub fn RecordKind::to_repr(Self) -> @debug.Repr
+
+pub(all) struct Total {
+  object : String
+  file : String
+  function_name : String
+  value : UInt64
+} derive(Eq, @debug.Debug)
+pub fn Total::equal(Self, Self) -> Bool
+pub fn Total::not_equal(Self, Self) -> Bool
+pub fn Total::to_repr(Self) -> @debug.Repr
+
+// Type aliases
+
+// Traits
