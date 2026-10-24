@@ -94,12 +94,16 @@ fn context_size(c : Context) -> Int32 {
 }
 
 ///|
-fn record_size(r : Record) -> Int {
+fn record_size(r : Record) -> Int32 {
   let extra = match r.kind {
     SelfCost => 0
-    Call(_, target, positions) => context_size(target) + positions.length() * 21 + 64
+    Call(_, target, positions) =>
+      context_size(target) + positions.length() * 21 + 64
   }
-  256 + context_size(r.context) + (r.positions.length() + r.values.length()) * 21 + extra
+  256 +
+  context_size(r.context) +
+  (r.positions.length() + r.values.length()) * 21 +
+  extra
 }
 
 ///|
