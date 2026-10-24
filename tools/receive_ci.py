@@ -11,8 +11,12 @@ assert len(encoded) < 1000000
 with gzip.GzipFile(fileobj=__import__('io').BytesIO(base64.b64decode(encoded, validate=True))) as stream:
     raw = stream.read(5000001)
 assert len(raw) <= 5000000
+selected = set(sys.argv[1:])
+assert selected <= allowed
 for name, content in json.loads(raw)['files'].items():
     assert name in allowed and isinstance(content, str)
+    if selected and name not in selected:
+        continue
     path = (root / name).resolve()
     assert path.is_relative_to(root.resolve())
     path.parent.mkdir(parents=True, exist_ok=True)

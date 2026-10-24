@@ -84,6 +84,20 @@ pub fn profile_version() -> String {
   "callgrind-records-v1"
 }
 
+///| Conservative UTF-16 size estimate before expanding repeated compressed names.
+fn context_size(c : Context) -> Int {
+  c.object.length() + c.file.length() + c.function_name.length() + c.cost_file.length()
+}
+
+///|
+fn record_size(r : Record) -> Int {
+  256 + context_size(r.context) + (r.positions.length() + r.values.length()) * 21 +
+  match r.kind {
+    SelfCost => 0
+    Call(_, target, positions) => context_size(target) + positions.length() * 21 + 64
+  }
+}
+
 ///|
 pub extend Context with Eq::{equal, not_equal}
 

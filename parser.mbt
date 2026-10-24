@@ -82,6 +82,7 @@ pub fn parse(text : String) -> Profile raise ParseError {
   let mut pending : (UInt64, Context, Array[UInt64])? = None
   let mut previous : Array[UInt64] = [0UL]
   let mut line = 0
+  let mut expanded = 0
   for view in text.split("\n") {
     line = line + 1
     if view.length() > 1048576 {
@@ -133,14 +134,18 @@ pub fn parse(text : String) -> Profile raise ParseError {
       if records.length() >= 200000 {
         raise Resource(line, "too many cost records")
       }
-      records.push({
+      let record : Record = {
         part: parts.length(),
         line,
         context: source,
         positions: pos,
         values,
         kind,
-      })
+      }
+      let size = record_size(record)
+      if size > 16777216 - expanded { raise Resource(line, "expanded records exceed size budget") }
+      expanded = expanded + size
+      records.push(record)
       pending = None
       called_file = None
       called_object = None
@@ -164,7 +169,9 @@ pub fn parse(text : String) -> Profile raise ParseError {
     if row[separator] == 58 {
       if (body && key != "totals") ||
         (key == "part" && headers.any(h => h.key == "part")) {
-        if events.is_empty() { raise Syntax(line, "part without events") }
+        if events.is_empty() {
+          raise Syntax(line, "part without events")
+        }
         if parts.length() >= 1023 {
           raise Resource(line, "too many dump parts")
         }

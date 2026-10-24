@@ -1,6 +1,5 @@
 import {
   "Rindoncreate/mooncallgrind" @cg,
-  "moonbitlang/core/json",
 }
 
 supported_targets = "js"
