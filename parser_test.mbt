@@ -1,6 +1,6 @@
 ///|
 test "preserve two call sites, target positions, recursion and exact counters" {
-  let p = parse(
+  let p = @mooncallgrind.parse(
     "events: Ir Dr\nob=(1) app\nfl=(1) main.mbt\nfn=(1) main\n10 9007199254740993\ncfn=(2) work\ncalls=2 70\n+1 30 4\ncfn=(2)\ncalls=1 71\n+3 40 5\ncfn=(1)\ncalls=1 10\n* 9\n",
   )
   assert_eq(p.records.length(), 4)
@@ -23,7 +23,7 @@ test "preserve two call sites, target positions, recursion and exact counters" {
 
 ///|
 test "part boundaries keep shared dictionaries and local event order" {
-  let p = parse(
+  let p = @mooncallgrind.parse(
     "part: 1\npositions: instr line\nevents: Ir Dr\nfl=(1) main.mbt\nfn=(1) main\n0x10 2 3 4\ntotals: 3 4\npart: 2\nevents: Dr Ir\npositions: line\nfl=(1)\nfn=(1)\n5 6 7\n",
   )
   assert_eq(p.parts.length(), 2)
@@ -34,7 +34,7 @@ test "part boundaries keep shared dictionaries and local event order" {
 
 ///|
 test "inline file is separate from function identity and defaults for callee" {
-  let p = parse(
+  let p = @mooncallgrind.parse(
     "events: Ir\nfl=outer.mbt\nfn=f\nfi=inline.mbt\n1 2\ncfn=g\ncalls=1 6\n+1 3\n",
   )
   assert_eq(p.records[0].context.file, "outer.mbt")
@@ -55,7 +55,7 @@ test "malformed and unsupported input is rejected without partial success" {
       "events: Ir\npositions: unknown\nfn=f\n1 1",
     ] {
     let rejected = try {
-      ignore(parse(bad))
+      ignore(@mooncallgrind.parse(bad))
       false
     } catch {
       _ => true

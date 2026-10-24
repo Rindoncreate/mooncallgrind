@@ -162,7 +162,9 @@ pub fn parse(text : String) -> Profile raise ParseError {
     let key = trim_ascii(row[:separator].to_owned())
     let value = trim_ascii(row[separator + 1:].to_owned())
     if row[separator] == 58 {
-      if body && key != "totals" {
+      if (body && key != "totals") ||
+        (key == "part" && headers.any(h => h.key == "part")) {
+        if events.is_empty() { raise Syntax(line, "part without events") }
         if parts.length() >= 1023 {
           raise Resource(line, "too many dump parts")
         }

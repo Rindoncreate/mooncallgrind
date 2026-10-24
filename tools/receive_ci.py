@@ -2,7 +2,7 @@
 from pathlib import Path
 import base64, gzip, json, sys
 root = Path(__file__).resolve().parents[1]
-allowed = {'model.mbt', 'numbers.mbt', 'numbers_test.mbt', 'parser.mbt', 'parser_test.mbt',
+allowed = {'model.mbt', 'numbers.mbt', 'numbers_wbtest.mbt', 'parser.mbt', 'parser_test.mbt',
            'normalize.mbt', 'analysis.mbt', 'analysis_test.mbt', 'bridge/run.mbt',
            'moon.mod', 'moon.pkg', 'bridge/moon.pkg', 'pkg.generated.mbti',
            'bridge/pkg.generated.mbti', '_build/js/debug/build/bridge/bridge.js'}
