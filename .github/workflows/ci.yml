@@ -30,6 +30,17 @@ jobs:
           done
           moon info
           moon package
+          moon run examples/sites --target js
+          moon run examples/sites --target native
+          node tools/check_cli.mjs
+          python3 tools/check_consumer.py
+      - name: Independent Valgrind reader
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y valgrind
+          callgrind_annotate --version
+          sha256sum -c fixtures/SHA256SUMS
+          node tools/check_reference.mjs
       - name: Export public source for inspection
         if: always()
         run: python3 tools/export_ci.py
