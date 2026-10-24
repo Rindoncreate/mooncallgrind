@@ -1,0 +1,6 @@
+_build/
+.venv/
+.mooncakes/
+node_modules/
+__pycache__/
+*.pyc

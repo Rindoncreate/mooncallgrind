@@ -1,0 +1,35 @@
+name: CI
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install official MoonBit
+        run: |
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+      - name: Format and verify
+        run: |
+          moon version --all
+          moon fmt
+          for target in js wasm wasm-gc native; do
+            moon check --target "$target" --deny-warn
+            moon build --target "$target" --deny-warn
+            moon test --target "$target" --deny-warn
+          done
+          moon info
+          moon package
+      - name: Export public source for inspection
+        if: always()
+        run: python3 tools/export_ci.py
