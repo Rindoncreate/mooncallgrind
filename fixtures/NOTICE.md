@@ -12,5 +12,9 @@ This is public profiling data used to test real compressed records. It is not
 our implementation, our benchmark workload, or evidence of endorsement. No
 moon-pprof parser or KCachegrind source is copied into the library.
 
+The file's declared summary is `363764634`, while its literal self-cost body sums
+to `363764636`. `tools/check_fixture.py` inventories the pinned line/Ir sample
+independently. The library retains both facts; it does not "repair" the source.
+
 `examples/two-sites.callgrind` is an original synthetic fixture under this
 project's MIT license.

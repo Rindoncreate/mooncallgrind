@@ -18,6 +18,7 @@ function annotated(path) {
   return rows.sort((a, b) => a[0].localeCompare(b[0]));
 }
 const folder = await mkdtemp(join(tmpdir(), 'mooncallgrind-reference-'));
+const inventory = JSON.parse(await readFile('fixtures/http_server.inventory.json', 'utf8'));
 try {
   for (const path of ['examples/two-sites.callgrind', 'fixtures/http_server.callgrind']) {
     const text = await readFile(path, 'utf8');
@@ -33,13 +34,17 @@ try {
     const computed = JSON.parse(run('totals', text, '', 'Ir'));
     assert.equal(computed.ok, true, JSON.stringify(computed.error));
     const sum = computed.value.reduce((acc, row) => acc + BigInt(row.value), 0n);
-    assert.equal(sum.toString(), total, 'self-cost sum differs from reference program totals');
+    const real = path.includes('http_server');
+    // PROGRAM TOTALS is declared metadata, not necessarily the sum of body records.
+    assert.equal(sum.toString(), real ? inventory.selfIr : '7', 'body self-cost sum differs from independently inventoried counters');
+    assert.equal(total, real ? inventory.declaredSummaryIr : '7', 'reference declared total changed');
     const calls = result.value.records.filter(r => r.kind.type === 'call');
     if (path.includes('http_server')) {
       assert.equal(calls.length, 2072);
+      assert.equal(result.value.records.length, inventory.records);
       assert.equal(result.value.parts.length, 1);
     }
-    console.log(`Independent reference passed: ${path}; ${result.value.records.length} records, ${calls.length} calls, Ir=${total}`);
+    console.log(`Independent reference passed: ${path}; ${result.value.records.length} records, ${calls.length} calls, body Ir=${sum}, declared Ir=${total}`);
   }
 } finally {
   await rm(folder, { recursive: true });
