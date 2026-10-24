@@ -84,7 +84,7 @@ fn profile_json(p : @cg.Profile) -> Json {
 }
 
 ///|
-fn failure(kind : String, line : Int, message : String) -> Json {
+fn failure(kind : String, line : Int32, message : String) -> Json {
   let detail = obj([
     ("kind", text(kind)),
     ("line", index(line)),

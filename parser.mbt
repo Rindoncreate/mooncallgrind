@@ -143,7 +143,9 @@ pub fn parse(text : String) -> Profile raise ParseError {
         kind,
       }
       let size = record_size(record)
-      if size > 16777216 - expanded { raise Resource(line, "expanded records exceed size budget") }
+      if size > 16777216 - expanded {
+        raise Resource(line, "expanded records exceed size budget")
+      }
       expanded = expanded + size
       records.push(record)
       pending = None

@@ -13,7 +13,9 @@ test "empty parts, literal alias-looking names and function changes retain seman
 
 ///|
 test "deterministic malformed corpus cannot escape as a partial parse" {
-  let alphabet = ["\n", "#", ":", "=", "*", "+", "-", "(", ")", "0", "a", " ", "\t"]
+  let alphabet = [
+    "\n", "#", ":", "=", "*", "+", "-", "(", ")", "0", "a", " ", "\t",
+  ]
   let mut seed = 17
   for i = 0; i < 400; i = i + 1 {
     let out = StringBuilder()
@@ -23,7 +25,7 @@ test "deterministic malformed corpus cannot escape as a partial parse" {
       out.write_string(alphabet[seed % alphabet.length()])
     }
     let text = out.to_string()
-    let accepted = try { Some(@mooncallgrind.parse(text)) } catch {
+    let accepted = Some(@mooncallgrind.parse(text)) catch {
       @mooncallgrind.Syntax(_, _) => None
       @mooncallgrind.Unsupported(_, _) => None
       @mooncallgrind.Resource(_, _) => None
@@ -44,18 +46,30 @@ test "deterministic malformed corpus cannot escape as a partial parse" {
 ///|
 test "overlong lines and compressed-name expansion are bounded" {
   let out = StringBuilder()
-  for i = 0; i < 1048577; i = i + 1 { out.write_string("x") }
-  let large = try { ignore(@mooncallgrind.parse(out.to_string())); false } catch {
+  for i = 0; i < 1048577; i = i + 1 {
+    out.write_string("x")
+  }
+  let large = try {
+    ignore(@mooncallgrind.parse(out.to_string()))
+    false
+  } catch {
     @mooncallgrind.Resource(_, _) => true
     _ => false
   }
   assert_true(large)
   let names = StringBuilder()
   names.write_string("events: Ir\nfn=(1) ")
-  for i = 0; i < 10000; i = i + 1 { names.write_string("x") }
+  for i = 0; i < 10000; i = i + 1 {
+    names.write_string("x")
+  }
   names.write_string("\n")
-  for i = 0; i < 1800; i = i + 1 { names.write_string("1 0\n") }
-  let expansion = try { ignore(@mooncallgrind.parse(names.to_string())); false } catch {
+  for i = 0; i < 1800; i = i + 1 {
+    names.write_string("1 0\n")
+  }
+  let expansion = try {
+    ignore(@mooncallgrind.parse(names.to_string()))
+    false
+  } catch {
     @mooncallgrind.Resource(_, _) => true
     _ => false
   }
@@ -65,15 +79,21 @@ test "overlong lines and compressed-name expansion are bounded" {
 ///|
 test "mutated public models are rejected before indexed access" {
   let p = @mooncallgrind.parse("events: Ir\nfn=f\n1 1\n")
-  p.records[0] = { ..p.records[0], part: -1 }
-  let bad_part = try { ignore(p.self_totals("Ir")); false } catch {
+  p.records[0] = { ..p.records[0], part: -1, }
+  let bad_part = try {
+    ignore(p.self_totals("Ir"))
+    false
+  } catch {
     @mooncallgrind.Syntax(_, _) => true
     _ => false
   }
   assert_true(bad_part)
   let q = @mooncallgrind.parse("events: Ir\nfn=f\n1 1\n")
   q.records[0].values.clear()
-  let bad_values = try { ignore(q.self_totals("Ir")); false } catch {
+  let bad_values = try {
+    ignore(q.self_totals("Ir"))
+    false
+  } catch {
     @mooncallgrind.Syntax(_, _) => true
     _ => false
   }

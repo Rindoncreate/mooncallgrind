@@ -1,11 +1,17 @@
 ///|
 test "totals exclude call costs, preserve identity and use each part event order" {
-  let p = @mooncallgrind.parse("part: 1\nevents: Ir Dr\nfl=a\nfn=f\n1 10 20\ncfn=g\ncalls=1 2\n2 100 200\npart: 2\nevents: Dr Ir\nfl=a\nfn=f\n1 3 4\nfl=b\nfn=f\n1 5 6\n")
+  let p = @mooncallgrind.parse(
+    "part: 1\nevents: Ir Dr\nfl=a\nfn=f\n1 10 20\ncfn=g\ncalls=1 2\n2 100 200\npart: 2\nevents: Dr Ir\nfl=a\nfn=f\n1 3 4\nfl=b\nfn=f\n1 5 6\n",
+  )
   let totals = p.self_totals("Ir")
   assert_eq(totals.length(), 2)
   assert_eq(totals[0].value, 14UL)
   assert_eq(totals[1].value, 6UL)
-  let changes = @mooncallgrind.diff(p, @mooncallgrind.parse("events: Ir\nfl=a\nfn=f\n1 2\n"), "Ir")
+  let changes = @mooncallgrind.diff(
+    p,
+    @mooncallgrind.parse("events: Ir\nfl=a\nfn=f\n1 2\n"),
+    "Ir",
+  )
   assert_eq(changes[0].before, 14UL)
   assert_eq(changes[0].after, 2UL)
   assert_eq(changes[1].after, 0UL)
@@ -13,10 +19,22 @@ test "totals exclude call costs, preserve identity and use each part event order
 
 ///|
 test "unknown metrics and sum overflow are rejected" {
-  let p = @mooncallgrind.parse("events: Ir\nfn=f\n1 18446744073709551615\n+1 1\n")
-  let overflow = try { ignore(p.self_totals("Ir")); false } catch { _ => true }
+  let p = @mooncallgrind.parse(
+    "events: Ir\nfn=f\n1 18446744073709551615\n+1 1\n",
+  )
+  let overflow = try {
+    ignore(p.self_totals("Ir"))
+    false
+  } catch {
+    _ => true
+  }
   assert_true(overflow)
-  let absent = try { ignore(p.self_totals("Cycles")); false } catch { _ => true }
+  let absent = try {
+    ignore(p.self_totals("Cycles"))
+    false
+  } catch {
+    _ => true
+  }
   assert_true(absent)
 }
 

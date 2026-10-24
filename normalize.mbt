@@ -34,13 +34,17 @@ pub fn normalize(text : String) -> String raise ParseError {
     budget = budget + 32
     for h in part.headers {
       let size = h.key.length() + h.value.length() + 4
-      if size > 16777216 - budget { raise Resource(h.line, "normalized text exceeds size budget") }
+      if size > 16777216 - budget {
+        raise Resource(h.line, "normalized text exceeds size budget")
+      }
       budget = budget + size
     }
   }
   for record in profile.records {
     let size = record_size(record)
-    if size > 16777216 - budget { raise Resource(record.line, "normalized text exceeds size budget") }
+    if size > 16777216 - budget {
+      raise Resource(record.line, "normalized text exceeds size budget")
+    }
     budget = budget + size
   }
   let out = StringBuilder()
