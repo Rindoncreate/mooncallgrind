@@ -50,9 +50,14 @@ test "packaged public API retains distinct target positions" {
     for target in ['js', 'native']:
         subprocess.run([moon, 'check', '--target', target, '--deny-warn'], cwd=consumer, check=True, timeout=60)
         subprocess.run([moon, 'test', '--target', target, '--deny-warn'], cwd=consumer, check=True, timeout=60)
-    # Rebuild transport from packaged source, never reuse a checkout's compiled JS.
-    subprocess.run([moon, 'build', '--target', 'js', '--deny-warn'], cwd=library, check=True, timeout=60)
-    for test in ['tools/check_input.mjs', 'tools/check_cli.mjs']:
-        subprocess.run(['node', test], cwd=library, check=True, timeout=60)
+    # Build outside moon.work: a workspace changes the artifact root and layout.
+    # This second extraction has no compiled output or sibling dependency fallback.
+    with tempfile.TemporaryDirectory(prefix='mooncallgrind-cli-') as standalone_folder:
+        standalone = Path(standalone_folder)
+        with zipfile.ZipFile(root / '_build/publish/Rindoncreate-mooncallgrind-0.1.0.zip') as package:
+            package.extractall(standalone)
+        subprocess.run([moon, 'build', '--target', 'js', '--deny-warn'], cwd=standalone, check=True, timeout=60)
+        for test in ['tools/check_input.mjs', 'tools/check_cli.mjs']:
+            subprocess.run(['node', test], cwd=standalone, check=True, timeout=60)
 print('Separate source-package consumer passed on JS and native; registry publication not implied')
 print('Packaged licenses, sources and freshly rebuilt CLI passed')
