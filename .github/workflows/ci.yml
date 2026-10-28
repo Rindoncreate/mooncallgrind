@@ -34,6 +34,7 @@ jobs:
           moon run examples/sites --target js
           moon run examples/sites --target native
           node tools/check_cli.mjs
+          node tools/check_input.mjs
           python3 tools/check_consumer.py
       - name: Independent Valgrind reader
         run: |
@@ -43,6 +44,17 @@ jobs:
           sha256sum -c fixtures/SHA256SUMS
           python3 tools/check_fixture.py
           node tools/check_reference.mjs
+      - name: Retain verified source package
+        uses: actions/upload-artifact@v4
+        with:
+          name: mooncallgrind-source-${{ github.sha }}
+          path: _build/publish/Rindoncreate-mooncallgrind-0.1.0.zip
+          if-no-files-found: error
+      - name: Format failed sources for diagnostics only
+        if: failure()
+        run: |
+          moon fmt
+          moon check --target js --deny-warn
       - name: Export public source for inspection
         if: always()
         run: python3 tools/export_ci.py
