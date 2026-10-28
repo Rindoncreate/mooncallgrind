@@ -57,7 +57,9 @@ fn fields(
         "line" => 2
         _ => raise Unsupported(line, "unknown position field: " + item)
       }
-      if rank <= previous_position { raise Syntax(line, "positions must follow instr, bb, line order") }
+      if rank <= previous_position {
+        raise Syntax(line, "positions must follow instr, bb, line order")
+      }
       previous_position = rank
     }
     seen.set(item, true)
