@@ -6,7 +6,8 @@ This is an explicit supported profile, not all Callgrind extensions.
 ## Accepted
 
 - Version omitted or `version: 1`; `events:` once per part; default position `line`.
-- Ordered unique `line`, `instr`, `bb` position fields and physical event fields.
+- Position fields follow `instr`, `bb`, `line` order (any nonempty subset); physical
+  events are unique and retain their declared order.
 - `ob`, `fl`, `fn`, `fi`, `fe`, `cob`, `cfi`/`cfl`, `cfn`, paired `calls`/cost lines.
 - Separate object/file/function ID dictionaries; `fn`/`cfn` share IDs, as do all file
   aliases. Dictionaries survive parts; later definitions replace earlier definitions.
@@ -31,7 +32,8 @@ also metadata, accessible through the owning part.
 
 Set `fn` before costs and `cfn` before the first call in each function. A resolved callee
 may be reused until the next `fn`/part. Object/file overrides are resolved when `cfn` is
-read; an override alone does not redefine the callee. A pending call must be followed
+read; an override alone does not redefine the callee. Overrides survive intervening
+self-cost lines and are cleared only after a call-cost line is consumed. A pending call must be followed
 by its cost line; intervening non-comment directives and EOF are syntax errors.
 
 Outer ASCII whitespace is trimmed from strings. Comments, whitespace, original ID
@@ -49,7 +51,10 @@ Resolved records have a conservative 16 Mi code-unit expansion budget, including
 numeric columns and fixed overhead. Normalization preflights headers plus records
 against another 16 Mi budget. Compact files with large name expansion may be rejected.
 These are practical bounds, not exact process-memory caps or a hardened security audit.
-The CLI also rejects files over 32 MiB and invalid UTF-8.
+The CLI accepts regular files, checks size before reading and reads in chunks of at
+most 64 KiB. It consumes at most 32 MiB + 1 byte, including if the file grows after
+the size check, and rejects over-limit input before decoding it. UTF-8 decoding
+preserves multibyte characters across chunks and rejects malformed/truncated input.
 
 - `Syntax(line,message)`: malformed input or a corrupted supplied model.
 - `Unsupported(line,message)`: a construct or metric outside this profile.

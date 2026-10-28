@@ -6,8 +6,8 @@ import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { run } from '../_build/js/debug/build/bridge/bridge.js';
 
-function annotated(path) {
-  const r = spawnSync('callgrind_annotate', ['--auto=no', '--show=Ir', '--show-percs=no', '--threshold=100', '--inclusive=no', '--tree=none', path], { encoding: 'utf8', timeout: 30000, maxBuffer: 8000000 });
+function annotated(path, calls = false) {
+  const r = spawnSync('callgrind_annotate', ['--auto=no', '--show=Ir', '--show-percs=no', '--threshold=100', `--inclusive=${calls ? 'yes' : 'no'}`, `--tree=${calls ? 'calling' : 'none'}`, path], { encoding: 'utf8', timeout: 30000, maxBuffer: 8000000 });
   assert.equal(r.status, 0, r.stderr);
   assert.equal(r.stderr, '', `reference warnings: ${r.stderr}`);
   const rows = r.stdout.split('\n').flatMap(line => {
@@ -20,7 +20,7 @@ function annotated(path) {
 const folder = await mkdtemp(join(tmpdir(), 'mooncallgrind-reference-'));
 const inventory = JSON.parse(await readFile('fixtures/http_server.inventory.json', 'utf8'));
 try {
-  for (const path of ['examples/two-sites.callgrind', 'fixtures/http_server.callgrind']) {
+  for (const path of ['examples/two-sites.callgrind', 'examples/callee-state.callgrind', 'fixtures/http_server.callgrind']) {
     const text = await readFile(path, 'utf8');
     const result = JSON.parse(run('inspect', text, '', ''));
     assert.equal(result.ok, true, JSON.stringify(result.error));
@@ -30,14 +30,21 @@ try {
     await writeFile(output, norm.value);
     const original = annotated(path);
     assert.deepEqual(annotated(output), original, 'independent function self-costs changed after normalization');
+    if (path.includes('callee-state')) {
+      assert.deepEqual(annotated(output, true), annotated(path, true), 'independent inclusive call tree changed after normalization');
+      assert.equal(result.value.records[1].kind.target.file, 'worker.mbt');
+      assert.equal(result.value.records[1].kind.target.object, 'worker.so');
+      assert.equal(result.value.records[2].kind.target.file, 'caller.mbt');
+    }
     const total = original.find(([name]) => name === 'PROGRAM TOTALS')[1];
     const computed = JSON.parse(run('totals', text, '', 'Ir'));
     assert.equal(computed.ok, true, JSON.stringify(computed.error));
     const sum = computed.value.reduce((acc, row) => acc + BigInt(row.value), 0n);
     const real = path.includes('http_server');
+    const syntheticTotal = path.includes('callee-state') ? '8' : '7';
     // PROGRAM TOTALS is declared metadata, not necessarily the sum of body records.
-    assert.equal(sum.toString(), real ? inventory.selfIr : '7', 'body self-cost sum differs from independently inventoried counters');
-    assert.equal(total, real ? inventory.declaredSummaryIr : '7', 'reference declared total changed');
+    assert.equal(sum.toString(), real ? inventory.selfIr : syntheticTotal, 'body self-cost sum differs from independently inventoried counters');
+    assert.equal(total, real ? inventory.declaredSummaryIr : syntheticTotal, 'reference declared total changed');
     const calls = result.value.records.filter(r => r.kind.type === 'call');
     if (path.includes('http_server')) {
       assert.equal(calls.length, 2072);

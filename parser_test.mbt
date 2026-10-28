@@ -63,3 +63,47 @@ test "malformed and unsupported input is rejected without partial success" {
     assert_true(rejected)
   }
 }
+
+///|
+test "callee file and object survive self costs and reset after a call" {
+  let p = @mooncallgrind.parse(
+    "events: Ir\nob=caller\nfl=caller.mbt\nfn=main\ncob=worker.so\ncfi=worker.mbt\n10 1\ncfn=work\ncalls=1 70\n+1 4\ncfn=local\ncalls=1 20\n+1 3\n",
+  )
+  match p.records[1].kind {
+    Call(_, target, _) => {
+      assert_eq(target.object, "worker.so")
+      assert_eq(target.file, "worker.mbt")
+    }
+    _ => fail("missing first call")
+  }
+  match p.records[2].kind {
+    Call(_, target, _) => {
+      assert_eq(target.object, "caller")
+      assert_eq(target.file, "caller.mbt")
+    }
+    _ => fail("missing second call")
+  }
+}
+
+///|
+test "canonical position order includes instruction basic-block and line" {
+  let text = "positions: instr bb line\nevents: Ir\nfn=f\n0x10 2 7 1\n+1 * +1 2\ncfn=g\ncalls=1 +5 +2 +10\n+1 +1 +1 3\n"
+  let p = @mooncallgrind.parse(text)
+  assert_eq(p.records[2].positions, [18UL, 3UL, 9UL])
+  match p.records[2].kind {
+    Call(_, _, target) => assert_eq(target, [22UL, 4UL, 18UL])
+    _ => fail("missing call")
+  }
+  let q = @mooncallgrind.parse(@mooncallgrind.normalize(text))
+  assert_eq(q.records[2].kind, p.records[2].kind)
+  for bad in ["line instr", "bb instr", "line bb", "instr line bb"] {
+    let rejected = try {
+      ignore(@mooncallgrind.parse("positions: " + bad + "\nevents: Ir\n"))
+      false
+    } catch {
+      @mooncallgrind.Syntax(_, _) => true
+      _ => false
+    }
+    assert_true(rejected)
+  }
+}

@@ -45,12 +45,20 @@ fn fields(
     raise Syntax(line, "expected 1..64 fields")
   }
   let seen : Map[String, Bool] = Map([])
+  let mut previous_position = -1
   for item in items {
     if seen.contains(item) {
       raise Syntax(line, "duplicate field")
     }
-    if positions && item != "line" && item != "instr" && item != "bb" {
-      raise Unsupported(line, "unknown position field: " + item)
+    if positions {
+      let rank = match item {
+        "instr" => 0
+        "bb" => 1
+        "line" => 2
+        _ => raise Unsupported(line, "unknown position field: " + item)
+      }
+      if rank <= previous_position { raise Syntax(line, "positions must follow instr, bb, line order") }
+      previous_position = rank
     }
     seen.set(item, true)
   }
@@ -148,9 +156,11 @@ pub fn parse(text : String) -> Profile raise ParseError {
       }
       expanded = expanded + size
       records.push(record)
+      if pending is Some(_) {
+        called_file = None
+        called_object = None
+      }
       pending = None
-      called_file = None
-      called_object = None
       body = true
       continue
     }
