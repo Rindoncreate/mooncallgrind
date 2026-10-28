@@ -44,11 +44,15 @@ jobs:
           sha256sum -c fixtures/SHA256SUMS
           python3 tools/check_fixture.py
           node tools/check_reference.mjs
+          python3 tools/check_release.py
       - name: Retain verified source package
         uses: actions/upload-artifact@v4
         with:
           name: mooncallgrind-source-${{ github.sha }}
-          path: _build/publish/Rindoncreate-mooncallgrind-0.1.0.zip
+          path: |
+            _build/publish/Rindoncreate-mooncallgrind-0.1.0.zip
+            _build/publish/Rindoncreate-mooncallgrind-0.1.0.release.json
+            _build/publish/SHA256SUMS
           if-no-files-found: error
       - name: Format failed sources for diagnostics only
         if: failure()

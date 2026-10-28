@@ -76,6 +76,7 @@ for record in p.records {
 - [测试和复现](docs/verification.md)
 - [生态差异和来源](docs/ecosystem.md)
 - [赛事交付状态](docs/competition.md)
+- [源码发布包与发布后验证](docs/release.md)
 
 源码 MIT；真实样本 Apache-2.0，归属和原始许可证见 [fixtures/NOTICE.md](fixtures/NOTICE.md)。
 AI 辅助开发。通用 CI 导出和源码包消费者脚手架改编自作者此前的 moondhcp4，

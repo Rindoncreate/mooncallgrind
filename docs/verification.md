@@ -17,25 +17,32 @@ done
 moon run examples/sites --target js
 moon run examples/sites --target native
 node tools/check_cli.mjs
+node tools/check_input.mjs
 moon package
 python3 tools/check_consumer.py
 ```
 
-13 core tests cover exact UInt64 values/overflow, relative positions, shared name
+15 core tests cover exact UInt64 values/overflow, relative positions, shared name
 dictionaries, two call sites and different targets, recursion, inline files, per-part
 event order, normalization semantics/idempotence, empty parts, malformed input,
-resource limits and corrupt public-model indices. A deterministic corpus of 400
+resource limits, callee overrides across self costs, canonical `instr bb line` ordering,
+and corrupt public-model indices. A deterministic corpus of 400
 generated inputs is inside one test, not 400 independent coverage claims. No fuzzing
 campaign or percentage coverage is claimed.
 
 The CLI check executes real subprocess commands for inspect/totals/normalize/diff,
 compares records, checks invalid UTF-8, UInt64 JSON strings and refusal to overwrite.
+Bounded-input tests cover partial reads, multibyte UTF-8 split across chunks, exact
+limits, truncated UTF-8 and growth after a size check. Over-limit regular files are
+rejected before loading their contents; the reader also enforces the cap while reading.
 `examples/sites` prints both sites using the public MoonBit model.
 
 The source-package consumer unpacks `moon package` into a fresh workspace and compiles
 a separate module on JS and native. It proves distinct target positions and >2^53
 counters survive public API use. Its output includes dependency tests as well as its
 one consumer test. This does not establish a Mooncakes registry install.
+The ZIP is separately extracted outside that workspace and the bridge is rebuilt
+before running the packaged CLI, so workspace artifact paths cannot mask missing files.
 
 ## Independent compatibility checks (Linux with Valgrind installed)
 
@@ -46,7 +53,9 @@ node tools/check_reference.mjs
 ```
 
 `callgrind_annotate` 3.22.0 reads original and normalized synthetic/real files; the
-test compares the function-self-cost rows it emits with identical settings. Its
+test compares the function-self-cost rows it emits with identical settings. The
+callee-state fixture additionally compares inclusive calling-tree rows, detecting
+wrong target file/object assignment through intervening self costs. Its
 thresholded report is not a complete proof of every target position, jump extension,
 producer or file size. Target positions are checked through typed record tests.
 
@@ -69,3 +78,7 @@ checks paths against the allowlist and writes only inside this project; it execu
 none of the imported paths. Check the job's exact source SHA before importing.
 
 This transport is development tooling, not part of the library API or adoption evidence.
+
+Successful CI retains the tested source ZIP, SHA-256 and source-commit manifest;
+see [release preparation](release.md). Registry verification is prepared but must be
+run only after the candidate is published; it is not claimed by the source-package tests.
