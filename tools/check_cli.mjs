@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, writeFile, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, writeFile, rm, open } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -31,6 +31,12 @@ try {
   const bad = join(folder, 'invalid.callgrind');
   await writeFile(bad, new Uint8Array([0xc0, 0xaf]));
   cli(['inspect', bad], 1); // invalid UTF-8 cannot silently become replacement chars
+  const large = join(folder, 'too-large.callgrind');
+  const largeHandle = await open(large, 'w');
+  try { await largeHandle.truncate(32 * 1024 * 1024 + 1); }
+  finally { await largeHandle.close(); }
+  assert.match(cli(['inspect', large], 1).stderr, /Input exceeds 32 MiB/);
+  cli(['inspect', folder], 1);
   const huge = 'events: Ir\nfn=f\n1 18446744073709551615\n';
   const exact = JSON.parse(run('inspect', huge, '', ''));
   assert.equal(exact.value.records[0].values[0], '18446744073709551615');

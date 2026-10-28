@@ -1,15 +1,11 @@
 #!/usr/bin/env node
 // Node handles files and stdout; the compiled MoonBit bridge owns the format.
-import { readFile, writeFile } from 'node:fs/promises';
+import { writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { run } from '../_build/js/debug/build/bridge/bridge.js';
+import { readUtf8File as read } from './read-input.mjs';
 
 const usage = 'Usage: node bin/mooncallgrind.mjs inspect FILE | totals FILE EVENT | normalize INPUT OUTPUT | diff BEFORE AFTER EVENT';
-async function read(path) {
-  const data = await readFile(path);
-  if (data.length > 32 * 1024 * 1024) throw new Error('Input exceeds 32 MiB');
-  return new TextDecoder('utf-8', { fatal: true }).decode(data);
-}
 export async function main(args) {
   const [op, a, b, c] = args;
   const count = { inspect: 2, totals: 3, normalize: 3, diff: 4 }[op];
