@@ -36,6 +36,8 @@ jobs:
           node tools/check_cli.mjs
           node tools/check_input.mjs
           python3 tools/check_consumer.py
+      - name: Verify published Mooncakes version
+        run: python3 tools/check_registry.py
       - name: Independent Valgrind reader
         run: |
           sudo apt-get update -qq
