@@ -18,6 +18,10 @@ python3 tools/check_release.py
 ```
 
 These commands prepare and verify a source archive; they do not publish to Mooncakes.
+Version 0.1.0 is now published from commit `1c4f57a`; its exact checksum and successful
+registry verification are recorded in [the release record](releases/0.1.0.md).
+Later CI artifacts are source snapshots of their own commits, not replacements for
+the immutable published 0.1.0 archive.
 The CI workflow contains no publishing credentials or automatic publication action.
 Published versions should be treated as immutable; inspect this exact version before
 authorizing a registry upload. Formal competition submission is a separate step.
@@ -32,6 +36,6 @@ python3 tools/check_registry.py
 This creates a temporary independent module pinned to
 `Rindoncreate/mooncallgrind@0.1.0`, fetches it from the registry and checks targets,
 callee context, normalization and exact counters on JS/native. There is no sibling
-workspace member, archive extraction or local fallback. **Until it has run successfully
-after publication, registry installation is unverified.** This script is deliberately
-not a required CI step while version 0.1.0 remains an unpublished candidate.
+workspace member, archive extraction or local fallback. The post-publication run passed
+on JS/native, and CI now runs this as a required step independently of source-package
+checks. This does not constitute formal competition submission or initial approval.

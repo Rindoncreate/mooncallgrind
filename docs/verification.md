@@ -80,5 +80,6 @@ none of the imported paths. Check the job's exact source SHA before importing.
 This transport is development tooling, not part of the library API or adoption evidence.
 
 Successful CI retains the tested source ZIP, SHA-256 and source-commit manifest;
-see [release preparation](release.md). Registry verification is prepared but must be
-run only after the candidate is published; it is not claimed by the source-package tests.
+see [release preparation](release.md). Separately, registry version 0.1.0 passed JS/native
+installation checks after publication in [CI 40796691798](https://github.com/Rindoncreate/mooncallgrind/actions/runs/40796691798).
+It uses a fresh independent module and has no source workspace/archive fallback.

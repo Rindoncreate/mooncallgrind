@@ -3,7 +3,8 @@
 MoonBit 的 Callgrind 文本格式库。把压缩文件解析为类型化记录，保留调用点、
 目标位置、直接递归、分段边界和 UInt64 计数，由使用者决定怎样聚合。
 
-尚未发布到 Mooncakes、尚未正式申报、没有获得赛事初审认可。
+`Rindoncreate/mooncallgrind@0.1.0` 已发布到 [Mooncakes](https://mooncakes.io/docs/Rindoncreate/mooncallgrind@0.1.0)，
+并通过独立项目的 JS/native 注册表安装验证。尚未正式申报，没有获得赛事初审认可。
 AI 辅助了实现、测试和文档；参赛者需理解并对代码负责，正式人工申报另行完成。
 
 ## 用途
@@ -38,8 +39,25 @@ node bin/mooncallgrind.mjs diff examples/two-sites.callgrind normalized.callgrin
 规范化输出文件必须不存在，避免覆盖。CLI 严格解码 UTF-8；JSON 中的计数、位置和
 调用次数全部是十进制字符串，避免 JavaScript Number 截断。
 
-发布前可使用源码或 MoonBit workspace 引入模块。源码包消费者检查不等于 Mooncakes
-安装验证；正式发布后再补经过实测的 registry 安装步骤。
+## 从 Mooncakes 安装
+
+在使用者的 `moon.mod` 添加固定版本依赖：
+
+```moonbit
+import {
+  "Rindoncreate/mooncallgrind@0.1.0",
+}
+```
+
+在使用者的 `moon.pkg` 添加包导入：
+
+```moonbit
+import { "Rindoncreate/mooncallgrind" @cg }
+```
+
+运行 `moon update`、`moon check --target js --deny-warn`。完整独立验证可运行
+`python3 tools/check_registry.py`；该脚本从注册表获取固定版本，无源码 workspace 回退。
+发布来源、原始 ZIP 校验和及验证记录见 [0.1.0 发布记录](docs/releases/0.1.0.md)。
 
 ## MoonBit API
 
